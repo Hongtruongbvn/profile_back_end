@@ -64,6 +64,10 @@ export class ChatService implements OnModuleInit {
           answer: "Dự án 3 (12/2025 - 02/2026) mình làm Backend Developer sử dụng NestJS, React, React Native, MongoDB với kiến trúc Monorepo. Là nền tảng trung gian quản lý xe, lộ trình, bán vé và tự động hóa chia hoa hồng. Mã nguồn: https://github.com/Hongtruongbvn/bus_ticket-.git"
         },
         {
+          question: "Bạn có các dự án nhỏ khác nào không? / Do you have other side projects?",
+          answer: "Có chứ! Mình có một vài dự án phát triển bằng Go (Golang) và C# WinForms rất thú vị:\n\n1. Các dự án Backend & DevOps bằng Golang:\n- DevOps Go: https://github.com/Hongtruongbvn/back-devop\n- Go Base BE 1: https://github.com/Hongtruongbvn/goalnd_24-05_be\n- Go Final BE: https://github.com/Hongtruongbvn/goalnd_final_be\n\n2. Ứng dụng WinForms (C#):\n- Ứng dụng quản lý trẻ em (Child Management): https://github.com/truongbvnedu/Child_MNG"
+        },
+        {
           question: "Thông tin liên hệ của Phạm Hồng Trưởng / Contact information",
           answer: "SĐT: 0931266543 | Email: truongtruongbvn@gmail.com | Địa chỉ: Ho Chi Minh City, Vietnam | GitHub: https://github.com/Hongtruongbvn"
         }
@@ -104,7 +108,8 @@ export class ChatService implements OnModuleInit {
   private detectLanguage(text: string): 'en' | 'vi' {
     const englishPatterns = [
       'who are you', 'skills', 'experience', 'project', 'kindergarten', 'social', 'bus ticket', 
-      'download', 'cv', 'resume', 'contact', 'phone', 'mail', 'github', 'deploy', 'credentials'
+      'download', 'cv', 'resume', 'contact', 'phone', 'mail', 'github', 'deploy', 'credentials',
+      'other projects', 'golang', 'winform', 'side project', 'c#', 'small project'
     ];
     const lowerText = text.toLowerCase();
     const hasEnglish = englishPatterns.some(word => lowerText.includes(word));
@@ -123,7 +128,8 @@ export class ChatService implements OnModuleInit {
       'làm việc', 'lam viec', 'dự án', 'du an', 'project', 'kỹ năng', 'ky nang', 'skills',
       'nestjs', 'react', 'fullstack', 'liên hệ', 'lien he', 'bạn', 'cậu', 'ai', 'who',
       'tải', 'download', 'email', 'sđt', 'phone', 'portfolio', 'học vấn', 'hoc van', 'education',
-      'mầm non', 'mam non', 'social', 'mạng xã hội', 'bus', 'ticket', 'vé xe', 'vtc', 'laravel'
+      'mầm non', 'mam non', 'social', 'mạng xã hội', 'bus', 'ticket', 'vé xe', 'vtc', 'laravel',
+      'golang', 'go', 'winform', 'c#', 'dự án nhỏ', 'dự án khác', 'other project', 'small project', 'side project'
     ];
 
     const isRelated = relatedKeywords.some(keyword => lower.includes(keyword));
@@ -135,12 +141,44 @@ export class ChatService implements OnModuleInit {
     }
 
     // 2. PHÂN TÍCH TRẢ LỜI CỤ THỂ KHI OFFLINE
+
+    // Dự án phụ / Dự án nhỏ (Golang & Winforms)
+    if (lower.includes('dự án nhỏ') || lower.includes('dự án khác') || lower.includes('golang') || lower.includes('go') || lower.includes('winform') || lower.includes('c#') || lower.includes('other project') || lower.includes('side project') || lower.includes('small project')) {
+      return lang === 'vi' ? `### Các dự án nhỏ & Nghiên cứu công nghệ khác của Phạm Hồng Trưởng:
+Ngoài các hệ thống lớn, mình luôn chủ động thử nghiệm các ngôn ngữ và công nghệ mới. Dưới đây là các dự án tiêu biểu:
+
+1. **Lập trình Backend & DevOps với Golang (Go):**
+- **DevOps Go**: Dự án tìm hiểu và cấu hình CI/CD, tự động hóa với Go.
+  * Mã nguồn: https://github.com/Hongtruongbvn/back-devop
+- **Go Base Backend 1**: Thiết kế kiến trúc nền tảng backend cơ bản bằng Golang.
+  * Mã nguồn: https://github.com/Hongtruongbvn/goalnd_24-05_be
+- **Go Final Backend**: Ứng dụng hoàn thiện tích hợp xử lý đa luồng (concurrency) bằng Golang.
+  * Mã nguồn: https://github.com/Hongtruongbvn/goalnd_final_be
+
+2. **Ứng dụng Windows Desktop bằng WinForms (C#):**
+- **Child Management System (Quản lý trẻ em)**: Phần mềm quản lý thông tin trẻ nhỏ trực quan trên nền tảng desktop.
+  * Mã nguồn: https://github.com/truongbvnedu/Child_MNG`
+      : `### Other Side Projects & Tech Experiments by Pham Hong Truong:
+Besides major web systems, I am highly interested in discovering new paradigms. Here are my prominent side projects:
+
+1. **Backend Development & DevOps with Golang (Go):**
+- **DevOps Go**: Automated DevOps configurations & pipeline building with Go.
+  * Source code: https://github.com/Hongtruongbvn/back-devop
+- **Go Base Backend 1**: Lightweight RESTful architectural starter in Go.
+  * Source code: https://github.com/Hongtruongbvn/goalnd_24-05_be
+- **Go Final Backend**: Scalable end-project using Go concurrency mechanics.
+  * Source code: https://github.com/Hongtruongbvn/goalnd_final_be
+
+2. **C# Windows Desktop Application (WinForms):**
+- **Child Management System**: A desktop tool designed for managing child information efficiently.
+  * Source code: https://github.com/truongbvnedu/Child_MNG`;
+    }
     
     // Dự án 1: Trường mầm non (Kindergarten)
     if (lower.includes('mầm non') || lower.includes('mam non') || lower.includes('kindergarten')) {
       return lang === 'vi' ? `### Dự án: Kindergarten Management (Quản lý trường mầm non) (11/2024 - 01/2025)
 - **Vai trò:** Team Leader, thiết kế cơ sở dữ liệu, phát triển logic Backend và hỗ trợ Frontend.
-- **Giới thiệu:** Hệ thống quản lý trường mầm non giúp tối ưu hóa lịch học, cơ sở vật chất, giáo viên và học sinh; tích hợp camera giám sát và cổng thanh toán học phí trực tuyến.
+- **Giới thiệu:** Hệ thống quản lý trường mầm non giúp tối ưu hóa lịch học, cơ sở vật chất, giáo viên và học sinh; tích hợp camera giám sát và thanh toán học phí trực tuyến.
 - **Công nghệ:** Laravel, MySQL.
 - **Liên kết thực tế:**
   * GitHub Repository: https://github.com/Hongtruongbvn/quan_ly_truong_mam_non
@@ -243,14 +281,13 @@ export class ChatService implements OnModuleInit {
   }
 
   async askGemini(userQuestion: string): Promise<string> {
-     const isEnglish = this.detectLanguage(userQuestion) === 'en';
+    const isEnglish = this.detectLanguage(userQuestion) === 'en';
+    
     try {
       const qnaList = await this.qnaService.findAll();
       const qnaKnowledge = qnaList
         .map((item, index) => `${index + 1}. Hỏi: "${item.question}" -> Trả lời: "${item.answer}"`)
         .join('\n');
-
-     
 
       const systemInstruction = `
 You are a bilingual (English and Vietnamese) intelligent AI Assistant representing Pham Hong Truong.
@@ -269,6 +306,12 @@ Your goal is to answer queries politely, professionally, and proudly.
 - Databases: MongoDB, MySQL, SQL Server
 - Tools: Docker, Git, Postman, Swagger, Jira, Trello
 - Strengths: Teamwork (Team Leader experience), Problem-solving, Logical thinking.
+
+=== OTHER SIDE PROJECTS (GOLANG & WINFORMS) ===
+- Golang DevOps Backend: DevOps CI/CD pipeline automation project -> Code repository: https://github.com/Hongtruongbvn/back-devop
+- Golang Base Backend: Golang RESTful architectural starting template -> Code repository: https://github.com/Hongtruongbvn/goalnd_24-05_be
+- Golang Final Backend: High performance concurrency model program -> Code repository: https://github.com/Hongtruongbvn/goalnd_final_be
+- C# WinForms: Child Management application on windows desktop platform -> Code repository: https://github.com/truongbvnedu/Child_MNG
 
 === THREE COMPREHENSIVE PROJECTS ===
 
@@ -305,8 +348,9 @@ Direct download URL: http://localhost:3000/public/${this.cvFileName}
 1. Respond to the user in the language they used to query. If they ask in English, answer in English. If they ask in Vietnamese, answer in Vietnamese.
 2. If the user asks for Truong's CV/Resume, you MUST provide the direct download link: http://localhost:3000/public/${this.cvFileName}.
 3. If the user asks about Truong's projects, always detail: Title, role, technology, purpose, and provide the relevant code repositories and deployment URLs.
-4. If they ask unrelated off-topic questions (like solving math, writing random HTML codes not belonging to his profile, storytelling), politely decline and redirect them to ask about Pham Hong Truong.
-5. Be polite, confident, professional, and friendly.
+4. When talking about small side projects or backend Golang/Winforms projects, clearly print out their descriptions and direct GitHub links.
+5. If they ask unrelated off-topic questions (like solving math, writing random HTML codes not belonging to his profile, storytelling), politely decline and redirect them to ask about Pham Hong Truong.
+6. Be polite, confident, professional, and friendly.
 `;
 
       // Vòng lặp gọi API Google
