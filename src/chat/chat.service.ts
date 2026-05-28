@@ -30,7 +30,6 @@ export class ChatService implements OnModuleInit {
     await this.seedDefaultData();
   }
 
-  // Lấy base URL động (chạy local hay production)
   private getBaseUrl(): string {
     const isProduction = process.env.NODE_ENV === 'production';
     if (isProduction) {
@@ -43,7 +42,6 @@ export class ChatService implements OnModuleInit {
     return `${this.getBaseUrl()}/public`;
   }
 
-  // Lấy danh sách ảnh từ thư mục public
   private getImageUrlsFromFolder(folderName: string): string[] {
     const publicPath = path.join(process.cwd(), 'public', folderName);
     const baseUrl = this.getPublicUrl();
@@ -60,6 +58,9 @@ export class ChatService implements OnModuleInit {
             imageUrls.push(`${baseUrl}/${folderName}/${file}`);
           }
         });
+        console.log(`[Image Loader] Đã tìm thấy ${imageUrls.length} ảnh trong thư mục ${folderName}`);
+      } else {
+        console.warn(`[Image Loader] Thư mục ${folderName} không tồn tại tại: ${publicPath}`);
       }
     } catch (error) {
       console.error(`[Image Loader] Lỗi đọc thư mục ${folderName}:`, error);
@@ -68,11 +69,31 @@ export class ChatService implements OnModuleInit {
     return imageUrls;
   }
 
-  // Tạo markdown cho ảnh
   private getImageMarkdown(folderName: string): string {
     const images = this.getImageUrlsFromFolder(folderName);
     if (images.length === 0) return '';
     return `\n\n### 🖼️ Hình ảnh giao diện dự án:\n${images.map(url => `![image](${url})`).join('\n')}`;
+  }
+
+  // Thêm phương thức lấy ảnh cho từng dự án cụ thể
+  private getProjectImages(projectName: string): string {
+    const projectMap: { [key: string]: string } = {
+      'kindergarten': 'project1',
+      'mamnon': 'project1',
+      'mầm non': 'project1',
+      'social': 'project2',
+      'mạng xã hội': 'project2',
+      'bus': 'project3',
+      'vé xe': 'project3',
+      'bus ticket': 'project3'
+    };
+    
+    for (const [key, folder] of Object.entries(projectMap)) {
+      if (projectName.toLowerCase().includes(key)) {
+        return this.getImageMarkdown(folder);
+      }
+    }
+    return '';
   }
 
   private async seedDefaultData() {
@@ -87,10 +108,13 @@ export class ChatService implements OnModuleInit {
 
       const cvDownloadUrl = `${this.getPublicUrl()}/${this.cvFileName}`;
       
-      // Lấy ảnh từ các thư mục dự án
       const project1Images = this.getImageMarkdown('project1');
       const project2Images = this.getImageMarkdown('project2');
       const project3Images = this.getImageMarkdown('project3');
+
+      console.log(`[Database Seeder] Project1 images: ${project1Images ? 'Có' : 'Không'}`);
+      console.log(`[Database Seeder] Project2 images: ${project2Images ? 'Có' : 'Không'}`);
+      console.log(`[Database Seeder] Project3 images: ${project3Images ? 'Có' : 'Không'}`);
 
       const defaultQnas = [
         {
@@ -112,6 +136,10 @@ export class ChatService implements OnModuleInit {
         {
           question: "Xem chi tiết dự án Bus Ticket",
           answer: `### 🚌 Dự án: Bus Ticket Management (12/2025 - 02/2026)\n\n**Vai trò:** Backend Developer\n**Công nghệ:** NestJS, React, React Native, MongoDB, Monorepo\n**Mô tả:** Nền tảng trung gian quản lý xe, lộ trình, bán vé và tự động chia hoa hồng.\n\n**📁 Mã nguồn:** https://github.com/Hongtruongbvn/bus_ticket-.git${project3Images}`
+        },
+        {
+          question: "Show Bus Ticket images",
+          answer: `### 🚌 Hình ảnh dự án Bus Ticket Management\n\n${project3Images}`
         },
         {
           question: "Xem dự án Golang và Winform",
@@ -157,7 +185,8 @@ export class ChatService implements OnModuleInit {
   private detectLanguage(text: string): 'en' | 'vi' {
     const englishPatterns = [
       'who are you', 'skills', 'project', 'kindergarten', 'social', 'bus',
-      'download', 'cv', 'resume', 'contact', 'phone', 'mail', 'github'
+      'download', 'cv', 'resume', 'contact', 'phone', 'mail', 'github',
+      'show', 'image', 'picture'
     ];
     const lowerText = text.toLowerCase();
     const hasEnglish = englishPatterns.some(word => lowerText.includes(word));
@@ -166,13 +195,13 @@ export class ChatService implements OnModuleInit {
 
   private getImageUrlsForQuestion(question: string): string {
     const lower = question.toLowerCase();
-    if (lower.includes('mầm non') || lower.includes('kindergarten')) {
+    if (lower.includes('mầm non') || lower.includes('kindergarten') || lower.includes('mam non')) {
       return this.getImageMarkdown('project1');
     }
     if (lower.includes('social') || lower.includes('mạng xã hội')) {
       return this.getImageMarkdown('project2');
     }
-    if (lower.includes('bus') || lower.includes('vé xe')) {
+    if (lower.includes('bus') || lower.includes('vé xe') || lower.includes('bus ticket')) {
       return this.getImageMarkdown('project3');
     }
     return '';
@@ -187,7 +216,8 @@ export class ChatService implements OnModuleInit {
 
     const relatedKeywords = [
       'trưởng', 'truong', 'cv', 'dự án', 'project', 'kỹ năng', 'skills',
-      'nestjs', 'react', 'liên hệ', 'mầm non', 'social', 'bus', 'golang', 'winform'
+      'nestjs', 'react', 'liên hệ', 'mầm non', 'social', 'bus', 'golang', 'winform',
+      'kindergarten', 'ticket', 'vé'
     ];
 
     const isRelated = relatedKeywords.some(keyword => lower.includes(keyword));
@@ -198,7 +228,7 @@ export class ChatService implements OnModuleInit {
         : `Sorry, this question is outside my scope. I only provide info about Pham Hong Truong.`;
     }
 
-    if (lower.includes('mầm non') || lower.includes('kindergarten')) {
+    if (lower.includes('mầm non') || lower.includes('kindergarten') || lower.includes('mam non')) {
       return `### 🏫 Dự án Quản lý trường Mầm non\n\n**Vai trò:** Team Leader\n**Công nghệ:** Laravel, MySQL\n**Demo:** https://quan-ly-truong-mam-non.onrender.com/\n**GitHub:** https://github.com/Hongtruongbvn/quan_ly_truong_mam_non\n**Admin:** 0987654321 / 12345678${imageUrls}`;
     }
 
@@ -206,7 +236,7 @@ export class ChatService implements OnModuleInit {
       return `### 🌐 Dự án Social Network\n\n**Vai trò:** Team Leader\n**Công nghệ:** NestJS, React, MongoDB\n**Demo Web:** https://socal-media-frontend.vercel.app/\n**Backend API:** https://socal-media-backend-qh5r.onrender.com/api${imageUrls}`;
     }
 
-    if (lower.includes('bus') || lower.includes('vé xe')) {
+    if (lower.includes('bus') || lower.includes('vé xe') || lower.includes('bus ticket')) {
       return `### 🚌 Dự án Bus Ticket Management\n\n**Vai trò:** Backend Developer\n**Công nghệ:** NestJS, MongoDB\n**GitHub:** https://github.com/Hongtruongbvn/bus_ticket-.git${imageUrls}`;
     }
 
@@ -246,9 +276,10 @@ You are a bilingual AI Assistant representing Pham Hong Truong.
 1. When showing images, ALWAYS use markdown format: ![image](URL)
 2. NEVER use local paths like C:\\ or ./public/
 3. Use this base URL for all images: ${baseUrl}
-4. Project images are in folders: /project1/, /project2/, /project3/
+4. Project images are in folders: /project1/ (Kindergarten), /project2/ (Social Network), /project3/ (Bus Ticket)
 5. CV download URL: ${cvDownloadUrl}
 6. Respond in the same language as the user.
+7. For Bus Ticket project, use images from /project3/ folder.
 
 === PROFILE ===
 - Name: Phạm Hồng Trưởng (Pham Hong Truong)
@@ -267,25 +298,25 @@ You are a bilingual AI Assistant representing Pham Hong Truong.
 1. Kindergarten Management (Laravel, MySQL)
    - Demo: https://quan-ly-truong-mam-non.onrender.com/
    - GitHub: https://github.com/Hongtruongbvn/quan_ly_truong_mam_non
-   - Images: ${baseUrl}/project1/
+   - Images folder: /project1/
    - Credentials: Admin 0987654321/12345678
 
 2. Social Network (NestJS, React, MongoDB)
    - Web Demo: https://socal-media-frontend.vercel.app/
    - Backend API: https://socal-media-backend-qh5r.onrender.com/api
    - GitHub Backend: https://github.com/Hongtruongbvn/socal-media-backend
-   - Images: ${baseUrl}/project2/
+   - Images folder: /project2/
 
 3. Bus Ticket (NestJS, MongoDB)
    - GitHub: https://github.com/Hongtruongbvn/bus_ticket-.git
-   - Images: ${baseUrl}/project3/
+   - Images folder: /project3/
 
 4. Side Projects:
    - Golang: https://github.com/Hongtruongbvn/back-devop
    - C# WinForms: https://github.com/truongbvnedu/Child_MNG
 
 === STRICT RULES ===
-1. If user asks "Xem ảnh" or "Show images", respond with ALL image URLs from that project using markdown.
+1. If user asks "Xem ảnh", "Show images", or asks about project images, respond with ALL image URLs from that project using markdown.
 2. CV download link must be: ${cvDownloadUrl}
 3. Stay focused on Truong's profile only.
 4. Be polite and professional.
@@ -299,7 +330,6 @@ You are a bilingual AI Assistant representing Pham Hong Truong.
           try {
             console.log(`[AI Request] Model: ${modelName} | Attempt: ${attempt}/${maxRetries}`);
             
-            // Thêm câu hỏi về ảnh nếu cần
             let finalQuestion = userQuestion;
             if ((userQuestion.includes('ảnh') || userQuestion.includes('image') || userQuestion.includes('hình')) && imageUrls) {
               finalQuestion = userQuestion + imageUrls;
@@ -312,7 +342,6 @@ You are a bilingual AI Assistant representing Pham Hong Truong.
             });
 
             if (response && response.text) {
-              // Đảm bảo response có ảnh nếu cần
               let result = response.text;
               if ((userQuestion.includes('ảnh') || userQuestion.includes('image')) && imageUrls && !result.includes('![]')) {
                 result += imageUrls;
