@@ -30,49 +30,46 @@ export class ChatService implements OnModuleInit {
     await this.seedDefaultData();
   }
 
-  private getBaseUrl(): string {
-    const isProduction = process.env.NODE_ENV === 'production';
-    if (isProduction) {
-      return 'https://profile-back-end.onrender.com';
-    }
-    return `http://localhost:${this.configService.get<number>('PORT') || 3000}`;
-  }
+ private getBaseUrl(): string {
+  // HARDCODE - luôn trả về domain production
+  return 'https://profile-back-end.onrender.com';
+}
 
   private getPublicUrl(): string {
     return `${this.getBaseUrl()}/public`;
   }
 
-  // Lấy cả ảnh và video từ thư mục
-  private getMediaUrlsFromFolder(folderName: string): { images: string[], videos: string[] } {
-    const publicPath = path.join(process.cwd(), 'public', folderName);
-    const baseUrl = this.getPublicUrl();
-    const images: string[] = [];
-    const videos: string[] = [];
-    
-    try {
-      if (fs.existsSync(publicPath)) {
-        const files = fs.readdirSync(publicPath);
-        const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'];
-        const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.m4v', '.avi', '.mkv'];
-        
-        files.forEach(file => {
-          const ext = path.extname(file).toLowerCase();
-          if (imageExtensions.includes(ext)) {
-            images.push(`${baseUrl}/${folderName}/${file}`);
-          } else if (videoExtensions.includes(ext)) {
-            videos.push(`${baseUrl}/${folderName}/${file}`);
-          }
-        });
-        console.log(`[Media Loader] ${folderName}: ${images.length} ảnh, ${videos.length} video`);
-      } else {
-        console.warn(`[Media Loader] Thư mục ${folderName} không tồn tại tại: ${publicPath}`);
-      }
-    } catch (error) {
-      console.error(`[Media Loader] Lỗi đọc thư mục ${folderName}:`, error);
+private getMediaUrlsFromFolder(folderName: string): { images: string[], videos: string[] } {
+  const publicPath = path.join(process.cwd(), 'public', folderName);
+  const baseUrl = this.getPublicUrl(); // Method này đã trả về đúng URL
+  const images: string[] = [];
+  const videos: string[] = [];
+  
+  try {
+    if (fs.existsSync(publicPath)) {
+      const files = fs.readdirSync(publicPath);
+      const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'];
+      const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.m4v', '.avi', '.mkv'];
+      
+      files.forEach(file => {
+        const ext = path.extname(file).toLowerCase();
+        // DÙNG baseUrl đã được cấu hình đúng
+        const fileUrl = `${baseUrl}/${folderName}/${file}`;
+        if (imageExtensions.includes(ext)) {
+          images.push(fileUrl);
+        } else if (videoExtensions.includes(ext)) {
+          videos.push(fileUrl);
+        }
+      });
+      console.log(`[Media Loader] ${folderName}: ${images.length} ảnh, ${videos.length} video`);
+      console.log(`[Media Loader] URLs:`, [...images, ...videos]);
     }
-    
-    return { images, videos };
+  } catch (error) {
+    console.error(`[Media Loader] Lỗi:`, error);
   }
+  
+  return { images, videos };
+}
 
   // Tạo markdown cho cả ảnh và video
   private getMediaMarkdown(folderName: string): string {
