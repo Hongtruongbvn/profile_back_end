@@ -30,48 +30,44 @@ export class ChatService implements OnModuleInit {
     await this.seedDefaultData();
   }
 
- private getBaseUrl(): string {
-  // HARDCODE - luôn trả về domain production
-  return 'https://profile-back-end.onrender.com';
-}
+  private getBaseUrl(): string {
+    return 'https://profile-back-end.onrender.com';
+  }
 
   private getPublicUrl(): string {
     return `${this.getBaseUrl()}/public`;
   }
 
-private getMediaUrlsFromFolder(folderName: string): { images: string[], videos: string[] } {
-  const publicPath = path.join(process.cwd(), 'public', folderName);
-  const baseUrl = this.getPublicUrl(); // Method này đã trả về đúng URL
-  const images: string[] = [];
-  const videos: string[] = [];
-  
-  try {
-    if (fs.existsSync(publicPath)) {
-      const files = fs.readdirSync(publicPath);
-      const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'];
-      const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.m4v', '.avi', '.mkv'];
-      
-      files.forEach(file => {
-        const ext = path.extname(file).toLowerCase();
-        // DÙNG baseUrl đã được cấu hình đúng
-        const fileUrl = `${baseUrl}/${folderName}/${file}`;
-        if (imageExtensions.includes(ext)) {
-          images.push(fileUrl);
-        } else if (videoExtensions.includes(ext)) {
-          videos.push(fileUrl);
-        }
-      });
-      console.log(`[Media Loader] ${folderName}: ${images.length} ảnh, ${videos.length} video`);
-      console.log(`[Media Loader] URLs:`, [...images, ...videos]);
+  private getMediaUrlsFromFolder(folderName: string): { images: string[], videos: string[] } {
+    const publicPath = path.join(process.cwd(), 'public', folderName);
+    const baseUrl = this.getPublicUrl();
+    const images: string[] = [];
+    const videos: string[] = [];
+    
+    try {
+      if (fs.existsSync(publicPath)) {
+        const files = fs.readdirSync(publicPath);
+        const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'];
+        const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.m4v', '.avi', '.mkv'];
+        
+        files.forEach(file => {
+          const ext = path.extname(file).toLowerCase();
+          const fileUrl = `${baseUrl}/${folderName}/${file}`;
+          if (imageExtensions.includes(ext)) {
+            images.push(fileUrl);
+          } else if (videoExtensions.includes(ext)) {
+            videos.push(fileUrl);
+          }
+        });
+        console.log(`[Media Loader] ${folderName}: ${images.length} ảnh, ${videos.length} video`);
+      }
+    } catch (error) {
+      console.error(`[Media Loader] Lỗi:`, error);
     }
-  } catch (error) {
-    console.error(`[Media Loader] Lỗi:`, error);
+    
+    return { images, videos };
   }
-  
-  return { images, videos };
-}
 
-  // Tạo markdown cho cả ảnh và video
   private getMediaMarkdown(folderName: string): string {
     const { images, videos } = this.getMediaUrlsFromFolder(folderName);
     let result = '';
@@ -87,7 +83,6 @@ private getMediaUrlsFromFolder(folderName: string): { images: string[], videos: 
     return result;
   }
 
-  // Lấy media cho câu hỏi cụ thể
   private getMediaForQuestion(question: string): string {
     const lower = question.toLowerCase();
     if (lower.includes('mầm non') || lower.includes('kindergarten') || lower.includes('mam non')) {
@@ -102,7 +97,6 @@ private getMediaUrlsFromFolder(folderName: string): { images: string[], videos: 
     return '';
   }
 
-  // System instruction theo ngôn ngữ
   private getSystemInstruction(lang: 'vi' | 'en'): string {
     const baseUrl = this.getPublicUrl();
     const cvDownloadUrl = `${baseUrl}/${this.cvFileName}`;
@@ -124,6 +118,7 @@ You are Pham Hong Truong's bilingual AI Assistant.
 - Education: VTC Academy - Fullstack Development
 - Phone: 0931266543 | Email: truongtruongbvn@gmail.com
 - GitHub: https://github.com/Hongtruongbvn
+- Avatar: ${baseUrl}/user/avatar.png
 
 === TECH STACK ===
 - Backend: NestJS, Laravel, Golang
@@ -157,6 +152,7 @@ You are Pham Hong Truong's bilingual AI Assistant.
 1. If user asks for "images", "videos", "show", "xem ảnh", "xem video" - respond with ALL media from that project
 2. CV download link must be: ${cvDownloadUrl}
 3. Be polite, professional, and helpful
+4. When asked "Who are you?" or "Bạn là ai?", respond with your profile information including avatar link
 `;
     }
     
@@ -176,6 +172,7 @@ Bạn là trợ lý AI song ngữ của Phạm Hồng Trưởng.
 - Học vấn: VTC Academy - Fullstack Development
 - Điện thoại: 0931266543 | Email: truongtruongbvn@gmail.com
 - GitHub: https://github.com/Hongtruongbvn
+- Avatar: ${baseUrl}/user/avatar.png
 
 === CÔNG NGHỆ ===
 - Backend: NestJS, Laravel, Golang
@@ -209,6 +206,7 @@ Bạn là trợ lý AI song ngữ của Phạm Hồng Trưởng.
 1. Nếu user hỏi "xem ảnh", "xem video", "show images" - trả về TẤT CẢ media từ dự án đó
 2. Link tải CV phải là: ${cvDownloadUrl}
 3. Lịch sự, chuyên nghiệp và hữu ích
+4. Khi được hỏi "Bạn là ai?" hoặc "Who are you?", hãy trả lời đầy đủ thông tin hồ sơ kèm link avatar
 `;
   }
 
@@ -223,23 +221,20 @@ Bạn là trợ lý AI song ngữ của Phạm Hồng Trưởng.
       console.log('[Database Seeder] Phát hiện database trống. Đang nạp dữ liệu hồ sơ mặc định của Phạm Hồng Trưởng...');
 
       const cvDownloadUrl = `${this.getPublicUrl()}/${this.cvFileName}`;
+      const avatarUrl = `${this.getPublicUrl()}/user/avatar.png`;
       
       const project1Media = this.getMediaMarkdown('project1');
       const project2Media = this.getMediaMarkdown('project2');
       const project3Media = this.getMediaMarkdown('project3');
 
-      console.log(`[Database Seeder] Project1 media: ${project1Media ? 'Có' : 'Không'}`);
-      console.log(`[Database Seeder] Project2 media: ${project2Media ? 'Có' : 'Không'}`);
-      console.log(`[Database Seeder] Project3 media: ${project3Media ? 'Có' : 'Không'}`);
-
       const defaultQnas = [
         {
           question: "Bạn là ai? Giới thiệu bản thân",
-          answer: "Mình là Phạm Hồng Trưởng (Pham Hong Truong), sinh viên Học viện Công nghệ VTC (VTC Academy) chuyên ngành lập trình Fullstack. Thế mạnh của mình là NestJS, Laravel, React và React Native."
+          answer: `### 👨‍💻 Giới thiệu về Phạm Hồng Trưởng\n\n![Avatar](${avatarUrl})\n\n**Tên:** Phạm Hồng Trưởng (Pham Hong Truong)\n**Học vấn:** Sinh viên Học viện Công nghệ VTC (VTC Academy) chuyên ngành Fullstack Development\n**Điện thoại:** 0931266543\n**Email:** truongtruongbvn@gmail.com\n**GitHub:** https://github.com/Hongtruongbvn\n\n**Thế mạnh:** NestJS, Laravel, React, React Native, Flutter\n\n**Mục tiêu:** Xây dựng các sản phẩm Web/Mobile tối ưu, hiện đại và mang lại giá trị thực cho người dùng.`
         },
         {
           question: "Who are you? Introduce yourself",
-          answer: "I am Pham Hong Truong, a student at VTC Academy majoring in Fullstack Development. My strengths are NestJS, Laravel, React, and React Native."
+          answer: `### 👨‍💻 About Pham Hong Truong\n\n![Avatar](${avatarUrl})\n\n**Name:** Pham Hong Truong\n**Education:** VTC Academy - Fullstack Development\n**Phone:** 0931266543\n**Email:** truongtruongbvn@gmail.com\n**GitHub:** https://github.com/Hongtruongbvn\n\n**Strengths:** NestJS, Laravel, React, React Native, Flutter\n\n**Goal:** Build optimized, modern Web/Mobile products that bring real value to users.`
         },
         {
           question: "Kỹ năng chuyên môn của bạn là gì?",
@@ -335,35 +330,47 @@ Bạn là trợ lý AI song ngữ của Phạm Hồng Trưởng.
   }
 
   private detectLanguage(text: string): 'en' | 'vi' {
-    const englishPatterns = [
-      'who are you', 'skills', 'project', 'kindergarten', 'social', 'bus',
-      'download', 'cv', 'resume', 'contact', 'phone', 'mail', 'github',
-      'show', 'image', 'picture', 'video', 'what is', 'tell me'
-    ];
-    const lowerText = text.toLowerCase();
-    const hasEnglish = englishPatterns.some(word => lowerText.includes(word));
-    return hasEnglish ? 'en' : 'vi';
+    const textLower = text.toLowerCase();
+    // Phát hiện tiếng Việt qua dấu câu và từ đặc trưng
+    const vietnameseMarkers = ['bạn', 'là', 'của', 'và', 'có', 'không', 'xin', 'chào', 'mình', 'tôi', 'ạ', 'nhé', 'được', 'sẽ', 'cho', 'xem'];
+    let vietnameseScore = 0;
+    for (const marker of vietnameseMarkers) {
+      if (textLower.includes(marker)) vietnameseScore++;
+    }
+    // Nếu có từ tiếng Việt đặc trưng thì trả về vi, ngược lại là en
+    return vietnameseScore > 0 ? 'vi' : 'en';
+  }
+
+  private async findInQna(userQuestion: string): Promise<string | null> {
+    const qnaList = await this.qnaService.findAll();
+    const lowerQuestion = userQuestion.toLowerCase().trim();
+    
+    for (const qna of qnaList) {
+      const lowerQnaQuestion = qna.question.toLowerCase().trim();
+      // Kiểm tra trùng khớp chính xác hoặc chứa từ khóa tương tự
+      if (lowerQnaQuestion === lowerQuestion || 
+          lowerQuestion.includes(lowerQnaQuestion) || 
+          lowerQnaQuestion.includes(lowerQuestion)) {
+        return qna.answer;
+      }
+    }
+    return null;
   }
 
   private handleLocalFallback(userQuestion: string): string {
     const lower = userQuestion.toLowerCase().trim();
     const baseUrl = this.getPublicUrl();
     const downloadUrl = `${baseUrl}/${this.cvFileName}`;
+    const avatarUrl = `${baseUrl}/user/avatar.png`;
     const lang = this.detectLanguage(userQuestion);
     const mediaMarkdown = this.getMediaForQuestion(userQuestion);
 
-    const relatedKeywords = [
-      'trưởng', 'truong', 'cv', 'dự án', 'project', 'kỹ năng', 'skills',
-      'nestjs', 'react', 'liên hệ', 'mầm non', 'social', 'bus', 'golang', 'winform',
-      'kindergarten', 'ticket', 'vé', 'contact', 'email', 'phone'
-    ];
-
-    const isRelated = relatedKeywords.some(keyword => lower.includes(keyword));
-
-    if (!isRelated) {
-      return lang === 'vi' 
-        ? `Xin lỗi, câu hỏi này nằm ngoài phạm vi của tôi. Tôi chỉ hỗ trợ thông tin về Phạm Hồng Trưởng (kỹ năng, dự án, học vấn).`
-        : `Sorry, this question is outside my scope. I only provide info about Pham Hong Truong (skills, projects, education).`;
+    // Xử lý câu hỏi giới thiệu
+    if (lower.includes('bạn là ai') || lower.includes('giới thiệu') || lower.includes('who are you')) {
+      if (lang === 'en') {
+        return `### 👨‍💻 About Pham Hong Truong\n\n![Avatar](${avatarUrl})\n\n**Name:** Pham Hong Truong\n**Education:** VTC Academy - Fullstack Development\n**Phone:** 0931266543\n**Email:** truongtruongbvn@gmail.com\n**GitHub:** https://github.com/Hongtruongbvn\n\n**Strengths:** NestJS, Laravel, React, React Native, Flutter\n\nI am a Fullstack developer passionate about building modern, optimized Web/Mobile products.`;
+      }
+      return `### 👨‍💻 Giới thiệu về Phạm Hồng Trưởng\n\n![Avatar](${avatarUrl})\n\n**Tên:** Phạm Hồng Trưởng (Pham Hong Truong)\n**Học vấn:** Sinh viên Học viện Công nghệ VTC (VTC Academy) chuyên ngành Fullstack Development\n**Điện thoại:** 0931266543\n**Email:** truongtruongbvn@gmail.com\n**GitHub:** https://github.com/Hongtruongbvn\n\n**Thế mạnh:** NestJS, Laravel, React, React Native, Flutter\n\nMình là lập trình viên Fullstack đam mê xây dựng các sản phẩm Web/Mobile tối ưu và hiện đại.`;
     }
 
     if (lower.includes('mầm non') || lower.includes('kindergarten') || lower.includes('mam non')) {
@@ -383,16 +390,24 @@ Bạn là trợ lý AI song ngữ của Phạm Hồng Trưởng.
     }
 
     if (lower.includes('kỹ năng') || lower.includes('skills')) {
+      if (lang === 'en') {
+        return `### 🛠️ Pham Hong Truong's Skills\n\n**Frameworks:** NestJS, Laravel, React, React Native, Flutter\n**Databases:** MySQL, MongoDB, SQL Server\n**Tools:** Docker, Git, Postman, Swagger\n**Soft Skills:** Team Leader, Problem-solving`;
+      }
       return `### 🛠️ Kỹ năng của Phạm Hồng Trưởng\n\n**Frameworks:** NestJS, Laravel, React, React Native, Flutter\n**Databases:** MySQL, MongoDB, SQL Server\n**Tools:** Docker, Git, Postman, Swagger\n**Soft Skills:** Team Leader, Problem-solving`;
     }
 
     if (lower.includes('liên hệ') || lower.includes('contact')) {
+      if (lang === 'en') {
+        return `### 📞 Contact Information\n\n📱 Phone: 0931266543\n📧 Email: truongtruongbvn@gmail.com\n📍 Address: Ho Chi Minh City, Vietnam\n🐙 GitHub: https://github.com/Hongtruongbvn\n📄 Download CV: ${downloadUrl}`;
+      }
       return `### 📞 Thông tin liên hệ\n\n📱 SĐT: 0931266543\n📧 Email: truongtruongbvn@gmail.com\n📍 Địa chỉ: TP. Hồ Chí Minh\n🐙 GitHub: https://github.com/Hongtruongbvn\n📄 Tải CV: ${downloadUrl}`;
     }
 
-    return lang === 'vi'
-      ? `Xin chào! Tôi là trợ lý của Phạm Hồng Trưởng. Bạn có thể hỏi về:\n- Kỹ năng công nghệ\n- Dự án Mầm non, Social Network, Bus Ticket\n- Dự án Golang, WinForm\n- Thông tin liên hệ\n- Xem ảnh/video dự án\n- Tải CV: ${downloadUrl}`
-      : `Hello! I am Pham Hong Truong's assistant. You can ask me about:\n- Tech skills\n- Kindergarten, Social Network, Bus Ticket projects\n- Golang, WinForm side projects\n- Contact information\n- View project images/videos\n- Download CV: ${downloadUrl}`;
+    // Câu trả lời mặc định
+    if (lang === 'en') {
+      return `Hello! I am Pham Hong Truong's assistant. You can ask me about:\n- Who I am / Introduction\n- Tech skills\n- Kindergarten, Social Network, Bus Ticket projects\n- Golang, WinForm side projects\n- Contact information\n- View project images/videos\n- Download CV: ${downloadUrl}`;
+    }
+    return `Xin chào! Tôi là trợ lý của Phạm Hồng Trưởng. Bạn có thể hỏi tôi về:\n- Tôi là ai / Giới thiệu bản thân\n- Kỹ năng công nghệ\n- Dự án Mầm non, Social Network, Bus Ticket\n- Dự án Golang, WinForm\n- Thông tin liên hệ\n- Xem ảnh/video dự án\n- Tải CV: ${downloadUrl}`;
   }
 
   async askGemini(userQuestion: string): Promise<string> {
@@ -402,6 +417,18 @@ Bạn là trợ lý AI song ngữ của Phạm Hồng Trưởng.
     const mediaMarkdown = this.getMediaForQuestion(userQuestion);
     
     try {
+      // Kiểm tra trong database trước
+      const qnaAnswer = await this.findInQna(userQuestion);
+      if (qnaAnswer) {
+        console.log(`[QnA Match] Tìm thấy câu trả lời trong database cho: "${userQuestion}"`);
+        // Thêm media nếu cần
+        if ((userQuestion.toLowerCase().includes('ảnh') || userQuestion.toLowerCase().includes('image') || 
+             userQuestion.toLowerCase().includes('video')) && mediaMarkdown) {
+          return qnaAnswer + mediaMarkdown;
+        }
+        return qnaAnswer;
+      }
+
       const qnaList = await this.qnaService.findAll();
       const qnaKnowledge = qnaList
         .map((item, index) => `${index + 1}. Q: "${item.question}" -> A: "${item.answer}"`)
@@ -419,10 +446,9 @@ Bạn là trợ lý AI song ngữ của Phạm Hồng Trưởng.
             
             let finalQuestion = userQuestion;
             
-            // Thêm media nếu user yêu cầu xem ảnh/video
-            if ((userQuestion.includes('ảnh') || userQuestion.includes('image') || 
-                 userQuestion.includes('hình') || userQuestion.includes('video') || 
-                 userQuestion.includes('show') || userQuestion.includes('xem')) && mediaMarkdown) {
+            if ((userQuestion.toLowerCase().includes('ảnh') || userQuestion.toLowerCase().includes('image') || 
+                 userQuestion.toLowerCase().includes('hình') || userQuestion.toLowerCase().includes('video') || 
+                 userQuestion.toLowerCase().includes('show') || userQuestion.toLowerCase().includes('xem')) && mediaMarkdown) {
               finalQuestion = userQuestion + '\n\n' + mediaMarkdown;
             }
             
@@ -434,9 +460,8 @@ Bạn là trợ lý AI song ngữ của Phạm Hồng Trưởng.
 
             if (response && response.text) {
               let result = response.text;
-              // Đảm bảo media được hiển thị
-              if ((userQuestion.includes('ảnh') || userQuestion.includes('image') || 
-                   userQuestion.includes('video')) && mediaMarkdown && !result.includes('![')) {
+              if ((userQuestion.toLowerCase().includes('ảnh') || userQuestion.toLowerCase().includes('image') || 
+                   userQuestion.toLowerCase().includes('video')) && mediaMarkdown && !result.includes('![')) {
                 result += '\n\n' + mediaMarkdown;
               }
               return result;
