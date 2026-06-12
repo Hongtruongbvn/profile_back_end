@@ -31,7 +31,7 @@ export class ChatService implements OnModuleInit {
   }
 
   private getBaseUrl(): string {
-    return 'https://profile-back-end.onrender.com';
+    return 'http://project1.truongbvn.online';
   }
 
   private getPublicUrl(): string {
